@@ -27,3 +27,23 @@ div
 img{
   width:500px;
 }
+.imagecontainer
+{
+  text-align: left;
+}
+.stacks
+{
+  width:70%;
+  margin:50px auto;
+}
+label{
+  color:red;
+  font-weight:600;
+  font-style: normal;
+  font-family: monospace;
+}
+.save
+{
+  text-align:center;
+  margin-top:50px;
+}

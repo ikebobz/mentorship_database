@@ -15,7 +15,10 @@ function Home() {
   const navigate = useNavigate();
 
   const handleClick = () => {
+    if(!isSignUp)
+    {
     navigate('/profile'); // Navigate to the About screen
+    }
   };
 
   const [isSignUp, setIsSignUp] = useState(false);
@@ -123,7 +126,7 @@ function Home() {
             required
           />
         </div>
-        <Button variant = "contained" color = "error" >{isSignUp ? 'Sign Up' : 'Sign In'}</Button>
+        <Button variant = "contained" color = "error"  onClick={handleClick}>{isSignUp ? 'Sign Up' : 'Sign In'}</Button>
 		</Box>
       </form>
       <p>
