@@ -16,6 +16,7 @@ import CallIcon from '@mui/icons-material/Call';
 import LocationCityIcon from '@mui/icons-material/LocationCity';
 import BadgeIcon from '@mui/icons-material/Badge';
 import SimpleBottomNavigation from '../components/SimpleNavigation';
+import StyleIcon from '@mui/icons-material/Style';
 
 const CustomTextField = styled(TextField)({
     width: '400px',
@@ -178,6 +179,15 @@ return (
           id="outlined-required"
           label="Membership Style"
           select
+          slotProps={{
+            input: {
+            startAdornment: (
+           <InputAdornment position="start">
+             < StyleIcon/>
+           </InputAdornment>
+         ),
+       },
+     }}
           />
        </Stack>
        </Stack>
