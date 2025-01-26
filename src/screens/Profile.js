@@ -17,6 +17,8 @@ import LocationCityIcon from '@mui/icons-material/LocationCity';
 import BadgeIcon from '@mui/icons-material/Badge';
 import SimpleBottomNavigation from '../components/SimpleNavigation';
 import StyleIcon from '@mui/icons-material/Style';
+import MenuItem from '@mui/material/MenuItem';
+import Select from '@mui/material/Select';
 
 const CustomTextField = styled(TextField)({
     width: '400px',
@@ -26,6 +28,19 @@ const CustomTextField = styled(TextField)({
 function Profile()
 {
 const navigate = useNavigate();
+const countryCodes = [
+    { code: '+1', label: 'USA (+1)' },
+    { code: '+44', label: 'UK (+44)' },
+    { code: '+91', label: 'India (+91)' },
+    { code: '+61', label: 'Australia (+61)' },
+    // Add more country codes as needed
+  ];
+  const [phoneNumber, setPhoneNumber] = useState('');
+  const [countryCode, setCountryCode] = useState('+1');
+  
+  const handleCountryCodeChange = (event) => {
+    setCountryCode(event.target.value);
+  };
 
 return (
     <div class = "profile">
@@ -88,6 +103,25 @@ return (
             startAdornment: (
            <InputAdornment position="start">
              < CallIcon/>
+             <Select
+              value={countryCode}
+              onChange={handleCountryCodeChange}
+               variant="standard"
+              sx={{
+                '& .MuiSelect-select': {
+                  paddingRight: '8px', // Adjust padding for better appearance
+                },
+                '&:before, &:after': {
+                  borderBottom: 'none', // Remove underline
+                },
+              }}
+            >
+              {countryCodes.map((option) => (
+                <MenuItem key={option.code} value={option.code}>
+                  {option.label}
+                </MenuItem>
+              ))}
+            </Select>
            </InputAdornment>
          ),
        },
