@@ -19,6 +19,7 @@ import SimpleBottomNavigation from '../components/SimpleNavigation';
 import StyleIcon from '@mui/icons-material/Style';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
+import EmailIcon from '@mui/icons-material/Email';
 
 const CustomTextField = styled(TextField)({
     width: '400px',
@@ -78,9 +79,8 @@ return (
          ),
        },
      }}
-          
-        />
-        <CustomTextField
+    />
+    <CustomTextField
           required
           id="outlined-required"
           label="Other name"
@@ -93,6 +93,21 @@ return (
          ),
        },
      }}
+    />
+         <CustomTextField
+          required
+          id="outlined-required"
+          label="Email"
+          slotProps={{
+            input: {
+            startAdornment: (
+           <InputAdornment position="start">
+             < EmailIcon/>
+           </InputAdornment>
+         ),
+       },
+     }}
+          
         />
         <CustomTextField
           required

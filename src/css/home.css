@@ -1,0 +1,18 @@
+.pagetitle
+{
+  color:red;
+  font-size: 14px;
+  font-family: 'Roboto, sans-serif';
+}
+.cardtitle
+{
+    color:red;
+    font-size: 14px;
+    font-family: 'Roboto, sans-serif';
+}
+.details
+{
+    /*color:red;*/
+    font-size: 12px;
+    font-family: 'Roboto, sans-serif';
+}
