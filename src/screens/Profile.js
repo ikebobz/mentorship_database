@@ -191,7 +191,7 @@ return (
      }}
         />
         <CustomTextField
-          required
+          
           id="outlined-required"
           label="Street Address"
           slotProps={{
@@ -209,7 +209,7 @@ return (
        <Stack spacing = {5}>
        <label>Membership Details</label>
        <CustomTextField
-          required
+          
           id="outlined-required"
           label="Professional Certification"
           select
@@ -224,7 +224,7 @@ return (
      }}
         />
         <CustomTextField
-          required
+          
           id="outlined-required"
           label="Membership Style"
           select

@@ -29,10 +29,10 @@ export default function SimpleBottomNavigation() {
               navigate('/profile');
               break;
             case 1:
-              navigate('/login');
+              navigate('/');
               break;
             case 2:
-              navigate('/');
+              navigate('/home');
               break;
             default:
               break;
