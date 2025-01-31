@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import '../App.css';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -20,6 +20,7 @@ import StyleIcon from '@mui/icons-material/Style';
 import MenuItem from '@mui/material/MenuItem';
 import Select from '@mui/material/Select';
 import EmailIcon from '@mui/icons-material/Email';
+import MultipleSelect from '../components/multiple';
 
 const CustomTextField = styled(TextField)({
     width: '400px',
@@ -36,12 +37,51 @@ const countryCodes = [
     { code: '+61', label: 'Australia (+61)' },
     // Add more country codes as needed
   ];
-  const [phoneNumber, setPhoneNumber] = useState('');
+  const [loading, setLoading] = useState(true);
   const [countryCode, setCountryCode] = useState('+1');
+  const [countries,setCountries] = useState([])
+  const [regions,setRegions] = useState([])
+  const [cities,setCities] = useState([])
+  const [certs,setCerts] = useState([])
+
   
   const handleCountryCodeChange = (event) => {
     setCountryCode(event.target.value);
   };
+
+  //fetch parameters
+  useEffect(() => {
+  const getParameters = async () => {
+    try {
+        // Send the form data to the API
+        const response =  await fetch('http://localhost:5000/parameters');
+  
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+  
+        const result = await response.json();
+        console.log('Success:', result);
+        setCountries(result.countries);
+        setRegions(result.regions)
+        setCities(result.cities)
+        setCerts(result.certificates)
+        
+        } 
+        catch (error) {
+        console.error('Error:', error);
+        }
+        finally{
+          setLoading(false)
+        }
+
+  };
+  getParameters();
+
+  },[]);
+  if(loading) return(<div>Loading.........</div>)
+
+
 
 return (
     <div class = "profile">
@@ -159,7 +199,13 @@ return (
          ),
        },
      }}
-          />
+          >
+            {countries.map((option) => (
+            <MenuItem key={option.id} value={option.description}>
+              {option.description}
+            </MenuItem>
+          ))}
+          </CustomTextField>
         <CustomTextField
           required
           id="outlined-required"
@@ -174,7 +220,13 @@ return (
          ),
        },
      }}
-        />
+        >
+            {regions.map((option) => (
+            <MenuItem key={option.id} value={option.description}>
+              {option.description}
+            </MenuItem>
+          ))}
+        </CustomTextField>
         <CustomTextField
           required
           id="outlined-required"
@@ -189,7 +241,14 @@ return (
          ),
        },
      }}
-        />
+        >
+      {cities.map((option) => (
+            <MenuItem key={option.id} value={option.description}>
+              {option.description}
+            </MenuItem>
+          ))}
+
+        </CustomTextField>
         <CustomTextField
           
           id="outlined-required"
@@ -208,24 +267,9 @@ return (
        
        <Stack spacing = {5}>
        <label>Membership Details</label>
-       <CustomTextField
-          
-          id="outlined-required"
-          label="Professional Certification"
-          select
-          slotProps={{
-            input: {
-            startAdornment: (
-           <InputAdornment position="start">
-             < BadgeIcon/>
-           </InputAdornment>
-         ),
-       },
-     }}
-        />
+       <MultipleSelect certs = {certs} />
         <CustomTextField
-          
-          id="outlined-required"
+         id="outlined-required"
           label="Membership Style"
           select
           slotProps={{

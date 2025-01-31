@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const app = express();
 const mysql = require('mysql2');
+const mysql2 = require('mysql2/promise')
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const PORT = process.env.PORT || 5000;
@@ -21,6 +22,17 @@ const connection = mysql.createConnection({
   database: 'mentordb',
 });
 
+const pool = mysql2.createPool({
+  host: 'localhost',
+  user: 'root',
+  password: 'mentor',
+  database: 'mentordb',
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0,
+  multipleStatements: true,
+});
+//test connection
 connection.connect((err) => {
   if (err) {
     console.error('Error connecting to MySQL:', err);
@@ -28,6 +40,16 @@ connection.connect((err) => {
   }
   console.log('Connected to MySQL database');
 });
+
+//test pool
+pool.getConnection()
+  .then((connection) => {
+    console.log('Connection acquired successfully');
+    connection.release();
+  })
+  .catch((err) => {
+    console.error('Failed to acquire connection:', err);
+  });
 
 // API routes
 app.post('/api/signup', (req, res) => {
@@ -68,6 +90,35 @@ let query = 'SELECT username,email FROM auth';
       return res.status(200);
     }
   });
+});
+//retrieve all parameters
+app.get('/parameters',  async (req, res) => {
+  try {
+    console.log('Attempting to get connection from pool');
+    const con = await pool.getConnection();
+    console.log('Connection acquired successfully');
+
+    // Execute multiple queries
+    const [results] = await con.query(`
+      SELECT * FROM country;
+      SELECT * FROM region;
+      SELECT * FROM city;
+      SELECT * FROM cert_types`);
+
+    // Release the connection back to the pool
+    con.release();
+
+    // Send the combined results as a response
+    res.json({
+      countries: results[0], // First query results
+      regions: results[1],
+      cities: results[2], 
+      certificates: results[3],
+    });
+  } catch (error) {
+    console.error('Error executing queries:', error);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
 });
 
 
@@ -113,6 +164,9 @@ app.post('/authenticate',  (req, res) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+
+
+
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
