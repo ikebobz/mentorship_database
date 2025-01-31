@@ -1,6 +1,6 @@
 //import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import '../App.css';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
@@ -12,36 +12,78 @@ import KeyIcon from '@mui/icons-material/Key';
 import logo from '../assets/haac_ico.png'
 import CryptoJS from 'crypto-js';
 import AlertDialog from '../components/alert';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import { IconButton } from '@mui/material';
+import bcrypt from 'bcryptjs';
+
 
 function Home() {
   const navigate = useNavigate();
+  //control references
   const formRef = useRef(null);
   const textFieldRef = useRef(null)
 
+  //regex
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
+
+  const [existingUsers, setExistingUsers] = useState([]);
+  const[userid,setUserId] = useState(null)
 
   const [emailValid,setEmailValid] = useState(true)
   const [passValid,setPassValid] = useState(true)
 
   const [emailTouched, setEmailTouched] = useState(false)
   const [pwdTouched, setPwdTouched] = useState(false)
+  const [unameTouched, setUnameTouched] = useState(false)
+
+  
+  const [userExists, setUserExists] = useState(false)
+  const [emailExists, setEmailExists] = useState(false)
 
   const [dlgParameters, setDlgParameters] = useState({
     title: '',
     text: '',
     sender: ''
   }) 
+  //fetch all user credentials
+  useEffect(() => {
+    const getAllUsers = async () => 
+        {
+          try {
+              // Send the form data to the API
+              const response =  await fetch('http://localhost:5000/users');
+        
+              if (!response.ok) {
+                throw new Error('Network response was not ok');
+              }
+        
+              const result = await response.json();
+              const data = result.existingUsers;
+              console.log('Success:', data);
+              setExistingUsers(data);
+              
+              } 
+              catch (error) {
+              console.error('Error:', error);
+              }
+              finally{
+                
+              }
+        };
+        getAllUsers();
+  }, []);
+
+  useEffect(() => {
+    console.log(existingUsers);
+  },[existingUsers]);
   
 
   const handleClick = () => {
-    /*if(!isSignUp)
-    {
-    navigate('/profile'); // Navigate to the About screen
-    }*/
     if (formRef.current) {
         formRef.current.dispatchEvent(new Event('submit', { cancelable: true, bubbles: true }));
       }
+    
   };
   
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -49,6 +91,9 @@ function Home() {
     setIsDialogOpen(false);
     if(dlgParameters.sender === 'signup')
     {navigate('/profile')}
+    /*else if(dlgParameters.sender === 'signin')
+      {  navigate('/') }*/
+    
     //else if (dlgParameters.sender === 'valdate')
   };
 
@@ -64,28 +109,77 @@ function Home() {
     const { name, value } = e.target;
      setFormData({
       ...formData,
-      [name]: name === 'password' ? CryptoJS.AES.encrypt(value, 'mentor').toString() : value,
+      [name]: value,
     });
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const hashed = bcrypt.hashSync(formData.password,10);
+        const data = {
+            email: formData.email,
+            username: formData.username,
+            password: hashed
+        }
     if (isSignUp) {
       console.log('Signing up:', formData);
       // Call signup API
       if(!emailValid)
       {
-        setDlgParameters({text:'Validation Error',text:'The email provided is invalid, please input a proper email',sender: 'validate'})
+        console.log("invalid email")
+        setDlgParameters({title:'Validation Error',text:'The email provided is invalid, please input a proper email',sender: 'validate'})
         setIsDialogOpen(true)
+        return;
       }
       if(!passValid)
       {
-        setDlgParameters({text:'Validation Error',text:'Password minimum length must be 8 and must be alphanumeric',sender: 'validate'})
+        console.log("invalid password")
+        setDlgParameters({title:'Validation Error',text:'Password minimum length must be 8 and must be alphanumeric',sender: 'validate'})
         setIsDialogOpen(true)
+        return;
+      }
+      if(userExists)
+      {
+        console.log("user exists")
+        setDlgParameters({title:'Validation Error',text:'A member with the specified username exists',sender: 'validate'})
+        setIsDialogOpen(true)
+        return;
+    }
+    if(emailExists)
+        {
+          setDlgParameters({title:'Validation Error',text:'A member with the specified email exists',sender: 'validate'})
+          setIsDialogOpen(true)
+          return;
       }
       try {
+        
         // Send the form data to the API
         const response = await fetch('http://localhost:5000/api/signup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+  
+        const result = await response.json();
+        console.log('Success:', result);
+        setDlgParameters({title:'Success',text:'An activation email has been sent to your email',sender: 'signup'})
+        setIsDialogOpen(true)
+        //alert('Form submitted successfully!');
+      } catch (error) {
+        console.error('Error:', error);
+        //alert('Failed to submit form.');
+      }
+    } else {
+      console.log('Signing in:', formData);
+      try {
+        // Send the form data to the sign in API
+        const response = await fetch('http://localhost:5000/authenticate', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -99,15 +193,23 @@ function Home() {
   
         const result = await response.json();
         console.log('Success:', result);
-        setDlgParameters({text:'Success',text:'An activation email has been sent to your email',sender: 'signup'})
-        setIsDialogOpen(true)
-        //alert('Form submitted successfully!');
+        if(result.message === "Authentication successful")
+        {
+            setUserId(result.id);
+            navigate('/home');
+            
+        }
+        else 
+        {
+            setDlgParameters({title:'Notice',text:'Invalid email and password combination',sender: 'signin'})
+            setIsDialogOpen(true)  
+        }
+        
       } catch (error) {
         console.error('Error:', error);
-        //alert('Failed to submit form.');
+        
       }
-    } else {
-      console.log('Signing in:', formData);
+
       // Call signin API
     }
   };
@@ -120,11 +222,19 @@ function Home() {
     
         setEmailTouched(true); // Mark the field as touched
         setEmailValid(emailRegex.test(value)); // Validate the email on blur
+        const exists = existingUsers.some((item) => item['email'] === value);
+        setEmailExists(exists)
     }
     else if(name === 'password')
     {
         setPwdTouched(true)
         setPassValid(passwordRegex.test(value))
+    }
+    else if(name === 'username')
+    {
+        setUnameTouched(true)
+        const exists = existingUsers.some((item) => item['username'] === value);
+        setUserExists(exists)
     }
     };
 
@@ -144,10 +254,12 @@ function Home() {
             <TextField
               name = 'username'
               id="standard-helperText"
+              error = {userExists ? true : false}
 			  label = "Username"
-              helperText="Provide a valid username"
+              helperText= {userExists ? 'Username has been taken' : 'Provide a username'}
               variant = 'standard'
 			  fullWidth
+              onBlur={handleBlur}
 			  slotProps={{
                input: {
                startAdornment: (
@@ -155,6 +267,15 @@ function Home() {
                 <AccountCircle />
               </InputAdornment>
             ),
+            endAdornment: (
+                <InputAdornment position="end">
+                  {!userExists && unameTouched && formData.username != '' && (
+                    <IconButton disabled>
+                      <CheckCircleIcon style={{ color: 'green' }} /> {/* Green tick */}
+                    </IconButton>
+                  )}
+                </InputAdornment>
+              ),
           },
         }}
               value = {formData.username}
@@ -169,8 +290,8 @@ function Home() {
             inputRef = {textFieldRef}
             id="standard-helperText"
 			label = "Email"
-            error = {isSignUp ? (!emailValid && emailTouched ? true : false) : false}
-            helperText = {isSignUp ? (!emailValid && emailTouched ? 'Email not valid' : 'Please provide a valid email') : 'Provide your email'}
+            error = {isSignUp ? ((!emailValid && emailTouched) || emailExists ? true : false) : false}
+            helperText = {isSignUp ? (!emailValid && emailTouched ? 'Email not valid' : (emailExists ? 'Email already exists' : 'Please provide a valid email')) : 'Provide your email'}
             variant="standard"
 			fullWidth
             onBlur={handleBlur}

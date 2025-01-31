@@ -5,6 +5,7 @@ const mysql = require('mysql2');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const PORT = process.env.PORT || 5000;
+const bcrypt = require('bcryptjs')
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
@@ -47,14 +48,70 @@ app.post('/api/signup', (req, res) => {
   //res.json({ message: 'Signup successful' });
 });
 
-app.post('/api/signin', (req, res) => {
-  // Handle signin logic here
-  res.json({ message: 'Signin successful' });
+
+//check for the existence of a username and email
+app.get('/users', (req, res) => {
+let query = 'SELECT username,email FROM auth';
+  connection.query(query, (err, results) => {
+    if (err) {
+      console.error('Database error:', err);
+      return res.status(500).json({ error: 'Database error.' });
+    }
+
+    if (results.length > 0) {
+      const existingUsers = results.map((user) => ({
+        username: user.username,
+        email: user.email,
+      }));
+      return res.status(200).json({ existingUsers });
+    } else {
+      return res.status(200);
+    }
+  });
 });
+
 
 // Serve the React app
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
+});
+//authenticate users
+app.post('/authenticate',  (req, res) => {
+  const { email, password } = req.body;
+
+  if (!email || !password) {
+    return res.status(400).json({ message: 'Email and password are required' });
+  }
+
+  try {
+    connection.query('SELECT id,email,password FROM auth WHERE email = ?', [email], (err,result) => {
+      if(err)
+      {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error.' });
+      }
+      if(result.length > 0)
+      {
+        const auth = result.map((token) => ({
+        email: token.email,
+        pwd: token.password,
+        id: token.id
+    }));
+       console.log(auth)
+        if(auth[0].email === email && bcrypt.compareSync(password, auth[0].pwd))
+        {
+          return res.status(200).json({"message": "Authentication successful","id": auth[0].id})
+        }
+        else 
+        return res.status(201).json({"message": "credentials does not exist",
+      "email": auth.email,"password": auth.pwd})
+      }
+
+    });
+} catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
 });
 
 app.listen(PORT, () => {

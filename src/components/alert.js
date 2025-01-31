@@ -19,7 +19,7 @@ export default function AlertDialog({
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">
+        <DialogTitle id="alert-dialog-title" style={{fontWeight: 'bold'}}>
           {title}
         </DialogTitle>
         <DialogContent>
