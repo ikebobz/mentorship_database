@@ -91,10 +91,7 @@ function Home() {
     setIsDialogOpen(false);
     if(dlgParameters.sender === 'signup')
     {navigate('/profile')}
-    /*else if(dlgParameters.sender === 'signin')
-      {  navigate('/') }*/
     
-    //else if (dlgParameters.sender === 'valdate')
   };
 
 

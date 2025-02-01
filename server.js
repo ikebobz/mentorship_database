@@ -103,7 +103,8 @@ app.get('/parameters',  async (req, res) => {
       SELECT * FROM country;
       SELECT * FROM region;
       SELECT * FROM city;
-      SELECT * FROM cert_types`);
+      SELECT * FROM cert_types;
+      select * from mentor_type`);
 
     // Release the connection back to the pool
     con.release();
@@ -114,6 +115,7 @@ app.get('/parameters',  async (req, res) => {
       regions: results[1],
       cities: results[2], 
       certificates: results[3],
+      mentorstyle: results[4],
     });
   } catch (error) {
     console.error('Error executing queries:', error);
@@ -163,6 +165,28 @@ app.post('/authenticate',  (req, res) => {
     console.error(err);
     return res.status(500).json({ message: 'Internal server error' });
   }
+});
+
+//upload form data
+app.post('/submit', (req, res) => {
+  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentorstyle } = req.body;
+  const fulladdress = `${address},${city},${region},${country}`
+  //validation checks would be done at client side
+
+  // Insert data into the MySQL database
+  connection.query(
+    'INSERT INTO userinfo (firstname,lastname,othername,email,mobile,address,professional_certs,mentorship_type) VALUES (?, ?,?,?,?,?,?,?)',
+    [firstname,lastname,othername,email,mobile,fulladdress,certifications,mentorstyle],
+    (error, results) => {
+      if (error) {
+        console.error('Error inserting data:', error);
+        return res.status(500).send('An error occurred while saving the data.');
+      }
+
+      console.log('Data inserted successfully:', results);
+      res.status(200).json({"message" : 'Form submitted successfully!'});
+    }
+  );
 });
 
 

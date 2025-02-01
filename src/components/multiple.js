@@ -63,7 +63,9 @@ export default function MultipleSelect(prop) {
     setCertNames(
       // On autofill we get a stringified value.
       typeof value === 'string' ? value.split(',') : value,
+      
     );
+    prop.onUpdate(certNames.join(','));
   };
   useEffect(() => {
     setCerts(prop.certs);
