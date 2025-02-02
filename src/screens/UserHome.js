@@ -13,20 +13,17 @@ import '../css/home.css'
 import { useEffect, useState} from 'react';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
 
+import FolderIcon from '@mui/icons-material/Folder';
 
 
 
 const UserHome = () => {
   // Sample user data
 
-  const [userId, setUserId] = useState('');
   const [loading, setLoading] = useState(true);
-  const [certs,setCerts] = useState([])
   const [data, setData] = useState({
     firstname:  "",
     email:  "",
@@ -133,9 +130,20 @@ const UserHome = () => {
         {userData.map((row, index) => (
           <Grid container alignItems="center" spacing={2} key={index} sx={{ marginBottom: 2 }}>
             <Grid item>{row.icon}</Grid>
-            <Grid item wordBreak = {'break-word'} maxWidth={'90%'}>
-            <Typography variant="body1" >{row.text}</Typography>
-            </Grid>
+            <Grid item>
+              {index === 3 && 
+              <List>
+               {data.certs.split('; ').map((val) => (
+                <ListItem sx = {{padding: 0}}>
+                  <ListItemIcon>
+                    <FolderIcon sx = {{width: 30}} />
+                  </ListItemIcon>
+                <ListItemText>{val}</ListItemText>
+                </ListItem>
+               )) }
+             </List>}
+              {index !== 3 && <Typography variant="body1" >{row.text}</Typography>}
+              </Grid>
           </Grid>
         ))}
       </CardContent>
