@@ -1,4 +1,5 @@
 import React from 'react';
+import { useLocation } from 'react-router-dom';
 import { Card, CardContent, CardMedia, Typography, Grid, Container } from '@mui/material';
 import SimpleBottomNavigation from '../components/SimpleNavigation';
 import logo from '../assets/haac_ico.png'
@@ -14,6 +15,12 @@ import '../css/home.css'
 
 const UserHome = () => {
   // Sample user data
+
+  const [userId, setUserId] = useState('');
+  
+  const location = useLocation();
+  setUserId(location.userid);
+
   const userData = [
     {
       icon: <PersonIcon fontSize="medium" color="black" />,

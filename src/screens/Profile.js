@@ -47,6 +47,7 @@ const countryCodes = [
   const [mentorStyle,setMentorStyles] = useState([])
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [errors, setErrors] = useState({})
+  const [userId, setUserId] = useState('')
 
   const [formData, setFormData] = useState({
     firstname: '',
@@ -72,7 +73,10 @@ const countryCodes = [
   const closeDialog = () => {
     setIsDialogOpen(false);
     if(dlgParameters.sender === 'form')
-    {navigate('/home')}
+    {
+      navigate('/home', {userid: userId})
+    
+    }
     };
   
 
@@ -138,6 +142,7 @@ const countryCodes = [
         console.log('Success:', result);
         if(result.message === 'Form submitted successfully!')
         {
+          setUserId(result.id)
         setDlgParameters({title:'Success',text:'Form successfully submitted',sender: 'form'})
         setIsDialogOpen(true)
         }

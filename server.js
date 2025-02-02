@@ -91,7 +91,39 @@ let query = 'SELECT username,email FROM auth';
     }
   });
 });
-//retrieve all parameters
+
+//get user details
+app.get('/userinfo/:id', (req, res) => {
+  const userid  = req.params.id
+  let query = 'SELECT * from userinfo where id = ?';
+    connection.query(query,[userid] ,(err, results) => {
+      if (err) {
+        console.error('Database error:', err);
+        return res.status(500).json({ error: 'Database error.' });
+      }
+  
+      if (results.length > 0) {
+        const userInfo = results.map((user) => ({
+          firstname: user.firstname,
+          email: user.email,
+          lastname: user.lastname,
+          othername: user.othername,
+          mobile: user.mobile,
+          address: user.address,
+          certs: user.professional_certs,
+          mentortype: user.mentorship_type
+
+        }));
+        const info = userInfo[0]
+        return res.status(200).json({ info });
+      } else {
+        return res.status(200);
+      }
+    });
+  });
+
+
+//retrieve all profile parameters
 app.get('/parameters',  async (req, res) => {
   try {
     console.log('Attempting to get connection from pool');
@@ -184,7 +216,7 @@ app.post('/submit', (req, res) => {
       }
 
       console.log('Data inserted successfully:', results);
-      res.status(200).json({"message" : 'Form submitted successfully!'});
+      res.status(200).json({"message" : 'Form submitted successfully!',"id": results.insertId});
     }
   );
 });
