@@ -65,7 +65,9 @@ export default function MultipleSelect(prop) {
       typeof value === 'string' ? value.split(',') : value,
       
     );
-    prop.onUpdate(certNames.join(','));
+    console.log(certNames)
+    console.log(certNames.join(','))
+    prop.onUpdate(certNames.join('; '));
   };
   useEffect(() => {
     setCerts(prop.certs);

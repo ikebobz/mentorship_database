@@ -22,6 +22,8 @@ import Select from '@mui/material/Select';
 import EmailIcon from '@mui/icons-material/Email';
 import MultipleSelect from '../components/multiple';
 import AlertDialog from '../components/alert';
+import { useLocation } from 'react-router-dom';
+
 
 const CustomTextField = styled(TextField)({
     width: '400px',
@@ -30,6 +32,9 @@ const CustomTextField = styled(TextField)({
 
 function Profile()
 {
+
+const location = useLocation();
+
 const navigate = useNavigate();
 const countryCodes = [
     { code: '+1', label: 'USA (+1)' },
@@ -74,7 +79,7 @@ const countryCodes = [
     setIsDialogOpen(false);
     if(dlgParameters.sender === 'form')
     {
-      navigate('/home', {userid: userId})
+      navigate('/home', {state: userId})
     
     }
     };
@@ -126,12 +131,17 @@ const countryCodes = [
     try {
         
         // Send the form data to the API
+        console.log('authentication id: ',location)
+        const updatedForm = {...formData, authid: location.state};
+        console.log('Updated form is: ', updatedForm)
+        setFormData(updatedForm)
+        console.log('Formdata: ',formData)
         const response = await fetch('http://localhost:5000/submit', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(updatedForm),
         });
   
         if (!response.ok) {
@@ -142,7 +152,7 @@ const countryCodes = [
         console.log('Success:', result);
         if(result.message === 'Form submitted successfully!')
         {
-          setUserId(result.id)
+        setUserId(result.id)
         setDlgParameters({title:'Success',text:'Form successfully submitted',sender: 'form'})
         setIsDialogOpen(true)
         }
@@ -157,6 +167,7 @@ const countryCodes = [
   //handle update from multiple select
   const handleMultipleSelect = (data) =>
   {
+    console.log('received data: ',data)
     setFormData({
      ...formData,
      certifications: data,

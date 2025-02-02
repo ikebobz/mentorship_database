@@ -40,6 +40,9 @@ function Home() {
   
   const [userExists, setUserExists] = useState(false)
   const [emailExists, setEmailExists] = useState(false)
+  const [authid, setAuthId] = useState(null)
+  const [profileid, setProfileId] = useState(null)
+
 
   const [dlgParameters, setDlgParameters] = useState({
     title: '',
@@ -90,7 +93,10 @@ function Home() {
   const closeDialog = () => {
     setIsDialogOpen(false);
     if(dlgParameters.sender === 'signup')
-    {navigate('/profile')}
+    {
+      console.log('navigating to profile with auth id: ',authid)
+      navigate('/profile', {state: authid})
+    }
     
   };
 
@@ -165,6 +171,7 @@ function Home() {
   
         const result = await response.json();
         console.log('Success:', result);
+        setAuthId(result.id)
         setDlgParameters({title:'Success',text:'An activation email has been sent to your email',sender: 'signup'})
         setIsDialogOpen(true)
         //alert('Form submitted successfully!');
@@ -192,8 +199,10 @@ function Home() {
         console.log('Success:', result);
         if(result.message === "Authentication successful")
         {
-            setUserId(result.id);
-            navigate('/home');
+            setProfileId(result.profileid);
+            if(result.profileid > 0)
+            navigate('/home', {state: result.profileid});
+           else navigate('/profile')
             
         }
         else 

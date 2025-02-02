@@ -169,7 +169,7 @@ app.post('/authenticate',  (req, res) => {
   }
 
   try {
-    connection.query('SELECT id,email,password FROM auth WHERE email = ?', [email], (err,result) => {
+    connection.query('SELECT id,email,password,profile_id FROM auth WHERE email = ?', [email], (err,result) => {
       if(err)
       {
         console.error('Database error:', err);
@@ -180,12 +180,13 @@ app.post('/authenticate',  (req, res) => {
         const auth = result.map((token) => ({
         email: token.email,
         pwd: token.password,
-        id: token.id
+        id: token.id,
+        profileid: token.profile_id
     }));
        console.log(auth)
         if(auth[0].email === email && bcrypt.compareSync(password, auth[0].pwd))
         {
-          return res.status(200).json({"message": "Authentication successful","id": auth[0].id})
+          return res.status(200).json({"message": "Authentication successful","id": auth[0].id,"profileid": auth[0].profileid})
         }
         else 
         return res.status(201).json({"message": "credentials does not exist",
@@ -201,8 +202,8 @@ app.post('/authenticate',  (req, res) => {
 
 //upload form data
 app.post('/submit', (req, res) => {
-  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentorstyle } = req.body;
-  const fulladdress = `${address},${city},${region},${country}`
+  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentorstyle,authid } = req.body;
+  const fulladdress = `${address}, ${city}, ${region}, ${country}`
   //validation checks would be done at client side
 
   // Insert data into the MySQL database
@@ -214,9 +215,16 @@ app.post('/submit', (req, res) => {
         console.error('Error inserting data:', error);
         return res.status(500).send('An error occurred while saving the data.');
       }
-
-      console.log('Data inserted successfully:', results);
-      res.status(200).json({"message" : 'Form submitted successfully!',"id": results.insertId});
+        const profileid = results.insertId
+        connection.query('update auth set profile_id = ? where id = ?',[profileid,authid],(err,result) =>{
+          if(err)
+          {
+            console.error('Error updating data:', error);
+            return res.status(500).send('An error occurred while saving the data.');
+          }
+          console.log('Data inserted successfully:', result);
+          res.status(200).json({"message" : 'Form submitted successfully!',"id": results.insertId});
+        })
     }
   );
 });
