@@ -10,6 +10,8 @@ import LocationCityIcon from '@mui/icons-material/LocationCity';
 import BadgeIcon from '@mui/icons-material/Badge';
 import StyleIcon from '@mui/icons-material/Style';
 import '../css/home.css'
+import { useEffect, useState} from 'react';
+
 
 
 
@@ -17,9 +19,20 @@ const UserHome = () => {
   // Sample user data
 
   const [userId, setUserId] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [data, setData] = useState({
+    firstname:  "",
+    email:  "",
+    lastname:  "",
+    othername:  "",
+    mobile:  "",
+    address:  "",
+    certs:  "",
+    mentortype:  ""
+  });
+  
   
   const location = useLocation();
-  setUserId(location.userid);
 
   const userData = [
     {
@@ -44,6 +57,50 @@ const UserHome = () => {
     },
 
   ];
+
+  const populateForm = () =>
+  {
+    userData[0].text = `${data.firstname} ${data.lastname}`
+    userData[1].text = data.mobile
+    userData[2].text = data.address
+    userData[3].text = data.certs
+    userData[4].text = data.mentortype
+  }
+
+
+  useEffect(() => {
+    setUserId(location.userid);
+
+    const getUserInfo = async () => {
+      try {
+          // Send the form data to the API
+          const response =  await fetch(`http://localhost:5000/userinfo/${userId}`);
+    
+          if (!response.ok) {
+            throw new Error('Network response was not ok');
+          }
+    
+          const result = await response.json();
+          console.log('Success:', result);
+          setData(result.info);
+          populateForm();          
+          } 
+          catch (error) {
+          console.error('Error:', error);
+          }
+          finally{
+            setLoading(false)
+          }
+  
+    };
+    getUserInfo();
+  
+    },[]);
+
+    if(loading)
+    {
+      return (<div>loading........</div>)
+    }
 
   return (
     <div>
