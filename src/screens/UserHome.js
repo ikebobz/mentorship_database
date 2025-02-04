@@ -11,12 +11,8 @@ import BadgeIcon from '@mui/icons-material/Badge';
 import StyleIcon from '@mui/icons-material/Style';
 import '../css/home.css'
 import { useEffect, useState} from 'react';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemButton from '@mui/material/ListItemButton';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
+import EmailIcon from '@mui/icons-material/Email';
+
 
 
 
@@ -24,7 +20,7 @@ import Divider from '@mui/material/Divider';
 const UserHome = () => {
   // Sample user data
 
-  const [userId, setUserId] = useState('');
+  const [profileId, setProfileId] = useState('');
   const [loading, setLoading] = useState(true);
   const [certs,setCerts] = useState([])
   const [data, setData] = useState({
@@ -45,6 +41,10 @@ const UserHome = () => {
     {
       icon: <PersonIcon fontSize="medium" color="black" />,
       text: 'Helen Excelsor',
+    },
+    {
+      icon: <EmailIcon fontSize="medium" color="black" />,
+      text: 'yelena@gmail.com',
     },
     {
       icon: <CallIcon fontSize="medium" color="black" />,
@@ -68,10 +68,11 @@ const UserHome = () => {
   const populateForm = () =>
   {
     userData[0].text = `${data.firstname} ${data.lastname}`
-    userData[1].text = data.mobile
-    userData[2].text = data.address
-    userData[3].text = data.certs
-    userData[4].text = data.mentortype
+    userData[1].text = data.email
+    userData[2].text = data.mobile
+    userData[3].text = data.address
+    userData[4].text = data.certs
+    userData[5].text = data.mentortype
     //setCerts(data.certs.split('; '))
   }
 
@@ -82,6 +83,14 @@ const UserHome = () => {
     const getUserInfo = async () => {
       try {
           // Send the form data to the API
+          const cachedData = localStorage.getItem('cachedData')
+
+          if(cachedData && !location.state)
+          {
+            setData(JSON.parse(cachedData));
+             setLoading(false);
+          }
+          else {
           console.log(`http://localhost:5000/userinfo/${location.state}`)
           const response =  await fetch(`http://localhost:5000/userinfo/${location.state}`);
     
@@ -92,6 +101,9 @@ const UserHome = () => {
           const result = await response.json();
           console.log('Success:', result);
           setData(result.info);
+          localStorage.setItem('cachedData',JSON.stringify(result.info))
+        }
+
                     
           } 
           catch (error) {
@@ -124,8 +136,8 @@ const UserHome = () => {
         src="https://via.placeholder.com/150"
         sx={{ width: 100, height: 100 }}
       /></center>
-      <h2>{userData[0].text},</h2>
-      <p>Member</p>
+      <h2>{`${data.profession}.,`}</h2>
+      <p>{`${data.membertype}`}</p>
     </div>
     <Card sx={{ maxWidth: 800, margin: 'auto', marginTop: 4 }}>
       <CardContent>

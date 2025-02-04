@@ -54,23 +54,26 @@ export default function MultipleSelect(prop) {
 ]);
 
 
-  const [certNames, setCertNames] = React.useState([]);
+  const [certNames, setCertNames] = useState([]);
 
   const handleChange = (event) => {
     const {
       target: { value },
     } = event;
-    setCertNames(
-      // On autofill we get a stringified value.
-      typeof value === 'string' ? value.split(',') : value,
-      
+    console.log(value)
+    setCertNames(certNames => [...certNames,...value]
     );
-    console.log(certNames)
-    console.log(certNames.join(','))
-    prop.onUpdate(certNames.join('; '));
+    console.log(value.join('; '))
+    prop.onUpdate(value.join('; '));
   };
   useEffect(() => {
     setCerts(prop.certs);
+    if(prop.value)
+    {
+      console.log('passed on certifiactes: ',prop.value)
+      setCertNames(prop.value)
+      console.log('set certificates: ',certNames)
+    }
   }, []);
   
 

@@ -7,6 +7,8 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const PORT = process.env.PORT || 5000;
 const bcrypt = require('bcryptjs')
+const nodemailer = require('nodemailer');
+
 
 // Serve static files from the React app
 app.use(express.static(path.join(__dirname, 'build')));
@@ -51,13 +53,32 @@ pool.getConnection()
     console.error('Failed to acquire connection:', err);
   });
 
+  //define transport protocol
+  const transporter = nodemailer.createTransport({
+      service: 'gmail', // Use your email service (e.g., 'gmail', 'yahoo', 'outlook')
+      auth: {
+          user: 'mcpikebobs@gmail.com', // Your email address
+          pass: 'fycs cewl dlhc btsp'  // Your email password or app-specific password
+      }
+  });
+  
+
 // API routes
 app.post('/api/signup', (req, res) => {
   const { username, email, password } = req.body;
 
   if (!username || !email || !password) {
     return res.status(400).json({ error: 'Name and email are required' });
-  }
+  };
+
+  //mail parameters
+  const mailOptions = {
+    from: 'mcpikebobs@gmail.com', // Sender address
+    to: `${email}`, // List of recipients
+    subject: 'Hello from Node.js', // Subject line
+    text: 'This is a test email sent from Node.js using nodemailer.', // Plain text body
+    html: '<p>This is a test email sent from <b>Node.js</b> using <i>nodemailer</i>.</p>' // HTML body
+};
 
   const query = 'INSERT INTO auth (username, email, password) VALUES (?, ?,?)';
   connection.query(query, [username, email, password], (err, results) => {
@@ -65,7 +86,17 @@ app.post('/api/signup', (req, res) => {
       console.error('Error inserting data:', err);
       return res.status(500).json({ error: 'Failed to insert data' });
     }
-    res.status(201).json({ id: results.insertId, username, email });
+    transporter.sendMail(mailOptions,(err,info) => {
+      if(err)
+      {
+        console.log('Error while sending mail', err)
+      }
+      {
+        console.log('Email send status: ',info)
+        res.status(201).json({ id: results.insertId, username, email });
+
+      }
+    })
   });
   //res.json({ message: 'Signup successful' });
 });
@@ -111,7 +142,10 @@ app.get('/userinfo/:id', (req, res) => {
           mobile: user.mobile,
           address: user.address,
           certs: user.professional_certs,
-          mentortype: user.mentorship_type
+          mentortype: user.mentorship_type,
+          profession: user.profession,
+          membertype: user.membertype,
+          profileid: user.id
 
         }));
         const info = userInfo[0]
@@ -202,14 +236,17 @@ app.post('/authenticate',  (req, res) => {
 
 //upload form data
 app.post('/submit', (req, res) => {
-  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentorstyle,authid } = req.body;
-  const fulladdress = `${address}, ${city}, ${region}, ${country}`
-  //validation checks would be done at client side
+  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentortype,profession,membertype,code,authid } = req.body;
+  let corrected_address = address.replace(',','')
+  const fulladdress = `${corrected_address}, ${city}, ${region}, ${country}`
+  const contact = `${code}-${mobile}`
+  //define mailing parameters
+ 
 
   // Insert data into the MySQL database
   connection.query(
-    'INSERT INTO userinfo (firstname,lastname,othername,email,mobile,address,professional_certs,mentorship_type) VALUES (?, ?,?,?,?,?,?,?)',
-    [firstname,lastname,othername,email,mobile,fulladdress,certifications,mentorstyle],
+    'INSERT INTO userinfo (firstname,lastname,othername,email,mobile,address,professional_certs,mentorship_type,profession,membertype) VALUES (?, ?,?,?,?,?,?,?,?,?)',
+    [firstname,lastname,othername,email,contact,fulladdress,certifications,mentortype,profession,membertype],
     (error, results) => {
       if (error) {
         console.error('Error inserting data:', error);
@@ -223,10 +260,31 @@ app.post('/submit', (req, res) => {
             return res.status(500).send('An error occurred while saving the data.');
           }
           console.log('Data inserted successfully:', result);
-          res.status(200).json({"message" : 'Form submitted successfully!',"id": results.insertId});
+          return res.status(200).json({"message" : 'Form submitted successfully!',"id": results.insertId});
         })
     }
   );
+});
+
+
+app.post('/update/:id',(rq,rs) =>{
+  const profileid = rq.params.id;
+  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentortype,profession,membertype,code} = rq.body;
+  let corrected_address = address.replace(',','');
+  const fulladdress = `${corrected_address}, ${city}, ${region}, ${country}`;
+  const contact = `${code}-${mobile}`;
+  let updateQuery = 'update userinfo set firstname = ?, lastname = ?,othername = ?,email = ?,mobile = ?,address = ?,professional_certs = ?,mentorship_type = ?,profession = ?, membertype = ? where id = ?'
+  connection.query(updateQuery,[firstname,lastname,othername,email,contact,fulladdress,certifications,mentortype,profession,membertype,profileid],(err,res)=>
+  {
+    if(err)
+    {
+      return rs.status(500).json({"An error occured with details: ": err})
+    }
+    else 
+    {
+      return rs.status(201).json({"message": "Update Success"})
+    }
+  })
 });
 
 

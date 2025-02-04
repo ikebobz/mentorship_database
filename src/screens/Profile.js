@@ -23,6 +23,8 @@ import EmailIcon from '@mui/icons-material/Email';
 import MultipleSelect from '../components/multiple';
 import AlertDialog from '../components/alert';
 import { useLocation } from 'react-router-dom';
+import CardMembershipIcon from '@mui/icons-material/CardMembership';
+import WorkIcon from '@mui/icons-material/Work';
 
 
 const CustomTextField = styled(TextField)({
@@ -44,7 +46,6 @@ const countryCodes = [
     // Add more country codes as needed
   ];
   const [loading, setLoading] = useState(true);
-  const [countryCode, setCountryCode] = useState('+1');
   const [countries,setCountries] = useState([])
   const [regions,setRegions] = useState([])
   const [cities,setCities] = useState([])
@@ -53,6 +54,9 @@ const countryCodes = [
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [errors, setErrors] = useState({})
   const [userId, setUserId] = useState('')
+  const [isEdit, setIsEdit] = useState(false)
+  const [profileid, setProfileId] = useState(0)
+  
 
   const [formData, setFormData] = useState({
     firstname: '',
@@ -65,7 +69,10 @@ const countryCodes = [
     city:'',
     address:'',
     certifications:'',
-    mentorstyle:'',
+    mentortype:'',
+    profession:'',
+    membertype:'',
+    code:''
   });
 
   const [dlgParameters, setDlgParameters] = useState({
@@ -82,13 +89,12 @@ const countryCodes = [
       navigate('/home', {state: userId})
     
     }
+    
     };
   
 
   
-  const handleCountryCodeChange = (event) => {
-    setCountryCode(event.target.value);
-  };
+  
 
   const formRef = useRef(null);
 
@@ -103,20 +109,21 @@ const countryCodes = [
   //fire when each texfield is populated
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if(name == 'mobile')
+    /*if(name == 'mobile')
     {
-        const val = `${countryCode}${value}`
+        const val = `${countryCode}-${value}`
         setFormData({
             ...formData,
             mobile: val,
           });
           return
 
-    }
+    }*/
      setFormData({
       ...formData,
       [name]: value,
     });
+   // console.log('formdata is: ',formData)
   };
  
   //handle form submission
@@ -131,6 +138,7 @@ const countryCodes = [
     try {
         
         // Send the form data to the API
+        if(!isEdit){
         console.log('authentication id: ',location)
         const updatedForm = {...formData, authid: location.state};
         console.log('Updated form is: ', updatedForm)
@@ -157,6 +165,31 @@ const countryCodes = [
         setIsDialogOpen(true)
         }
         //alert('Form submitted successfully!');
+      }
+      else //update user changes
+      {
+        setUserId(profileid)
+        const response = await fetch(`http://localhost:5000/update/${profileid}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(formData),
+        });
+  
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+  
+        const result = await response.json();
+        console.log('Success:', result);
+        if(result.message === 'Update Success')
+        {
+        setDlgParameters({title:'Success',text:'Update Succesful',sender:'form'})
+        setIsDialogOpen(true)
+        }
+
+      }
       } catch (error) {
         console.error('Error:', error);
         //alert('Failed to submit form.');
@@ -209,14 +242,36 @@ const countryCodes = [
         newErrors.city = 'City is required';
       }
 
-      if (!formData.mentorstyle.trim()) {
-        newErrors.mentorstyle = 'Mentor mode is required';
+      if (!formData.mentortype.trim()) {
+        newErrors.mentortype = 'Mentor mode is required';
+      }
+      if (!formData.membertype.trim()) {
+        newErrors.membertype = 'Member type is required';
       }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Return true if no errors
   };
-  
+  //load saved data for editing and update
+  const loadProfile = () => {
+    if(localStorage.getItem('cachedData'))
+    {
+      setIsEdit(true)
+      const profile = JSON.parse(localStorage.getItem('cachedData'));
+      setProfileId(profile.profileid);
+      console.log(profile);
+      setFormData(formData => ({
+        ...profile,
+        address: profile.address.split(', ')[0],
+        city: profile.address.split(', ')[1],
+        region: profile.address.split(', ')[2],
+        country: profile.address.split(', ')[3],
+        mobile: profile.mobile.substring(profile.mobile.indexOf('-') + 1),
+        code: profile.mobile.split('-',2)[0]
+      }))
+      console.log('Form data is: ', formData)
+    }
+  }
 
   //fetch parameters
   useEffect(() => {
@@ -236,6 +291,7 @@ const countryCodes = [
         setCities(result.cities)
         setCerts(result.certificates)
         setMentorStyles(result.mentorstyle)
+        loadProfile();
         
         } 
         catch (error) {
@@ -269,6 +325,7 @@ return (
           id="outlined-required"
           label="First Name"
           onChange={handleChange}
+          value ={formData.firstname}
           slotProps={{
             input: {
             startAdornment: (
@@ -285,6 +342,7 @@ return (
           id="outlined-required"
           label="Last Name"
           onChange={handleChange}
+          value ={formData.lastname}
           slotProps={{
             input: {
             startAdornment: (
@@ -301,6 +359,7 @@ return (
           id="outlined-required"
           label="Other name"
           onChange={handleChange}
+          value ={formData.othername}
           slotProps={{
             input: {
             startAdornment: (
@@ -317,6 +376,7 @@ return (
           id="outlined-required"
           label="Email"
           onChange={handleChange}
+          value ={formData.email}
           slotProps={{
             input: {
             startAdornment: (
@@ -334,14 +394,16 @@ return (
           id="outlined-required"
           label="Contact"
           onChange={handleChange}
+          value ={formData.mobile}
           slotProps={{
             input: {
             startAdornment: (
            <InputAdornment position="start">
              < CallIcon/>
              <Select
-              value={countryCode}
-              onChange={handleCountryCodeChange}
+              name ='code'
+              value={formData.code}
+              onChange={handleChange}
                variant="standard"
               sx={{
                 '& .MuiSelect-select': {
@@ -373,6 +435,7 @@ return (
           label="Country"
           select
           onChange={handleChange}
+          value = {formData.country}
           slotProps={{
             input: {
             startAdornment: (
@@ -396,6 +459,7 @@ return (
           label="Region"
           select
           onChange={handleChange}
+          value = {formData.region}
           slotProps={{
             input: {
             startAdornment: (
@@ -419,6 +483,7 @@ return (
           label="City"
           select
           onChange={handleChange}
+          value = {formData.city}
           slotProps={{
             input: {
             startAdornment: (
@@ -442,6 +507,7 @@ return (
           id="outlined-required"
           label="Street Address"
           onChange={handleChange}
+          value = {formData.address}
           slotProps={{
             input: {
             startAdornment: (
@@ -457,11 +523,12 @@ return (
        <Stack spacing = {5}>
        <label>Membership Details</label>
         <CustomTextField
-         name = 'mentorstyle'
+         name = 'mentortype'
          id="outlined-required"
           label="Membership Style"
           select
           onChange={handleChange}
+          value = {formData.mentortype}
           slotProps={{
             input: {
             startAdornment: (
@@ -479,12 +546,53 @@ return (
           ))}
 
           </CustomTextField>
-          <MultipleSelect certs = {certs}  onUpdate = {handleMultipleSelect} />
+          <MultipleSelect certs = {certs}  onUpdate = {handleMultipleSelect} value = {formData.certs.split('; ')} />
 
-       </Stack>
+          <CustomTextField
+         name = 'membertype'
+         id="outlined-required"
+          label="Member type"
+          select
+          onChange={handleChange}
+          value = {formData.membertype}
+          slotProps={{
+            input: {
+            startAdornment: (
+           <InputAdornment position="start">
+             < CardMembershipIcon/>
+           </InputAdornment>
+         ),
+       },
+     }}
+          >
+     <MenuItem key='1' value='Mentor'>
+              Mentor
+            </MenuItem>
+            <MenuItem key='2' value='Mentee'>
+              Mentee
+            </MenuItem>
+       </CustomTextField>
+
+       <CustomTextField
+          name = 'profession'
+          label="Profession"
+          onChange={handleChange}
+          value ={formData.profession}
+          slotProps={{
+            input: {
+            startAdornment: (
+           <InputAdornment position="start">
+             < WorkIcon/>
+           </InputAdornment>
+         ),
+       },
+     }}
+          
+        />
+    </Stack>
        </Stack>
        <div style = {{textAlign: 'center',marginTop: 10}}>
-       <Button variant = "contained" color = "error" onClick={handleSubmit}>Save</Button>
+       <Button variant = "contained" color = "error" onClick={handleSubmit}>{isEdit ? 'Update' : 'Save'}</Button>
        </div></form>
         </div>
       <center><SimpleBottomNavigation /></center>
