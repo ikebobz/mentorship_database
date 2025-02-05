@@ -15,9 +15,12 @@ import AlertDialog from '../components/alert';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { IconButton } from '@mui/material';
 import bcrypt from 'bcryptjs';
+import CircularProgress from '@mui/material/CircularProgress';
+import { Visibility } from '@mui/icons-material';
 
 
 function Home() {
+  const apiUrl = process.env.REACT_APP_API_URL
   const navigate = useNavigate();
   //control references
   const formRef = useRef(null);
@@ -28,7 +31,8 @@ function Home() {
   const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d).{8,}$/;
 
   const [existingUsers, setExistingUsers] = useState([]);
-  const[userid,setUserId] = useState(null)
+  const[showProgress,setShowProgress] = useState(false)
+
 
   const [emailValid,setEmailValid] = useState(true)
   const [passValid,setPassValid] = useState(true)
@@ -55,7 +59,7 @@ function Home() {
         {
           try {
               // Send the form data to the API
-              const response =  await fetch('http://localhost:5000/users');
+              const response =  await fetch(`${apiUrl}/users`);
         
               if (!response.ok) {
                 throw new Error('Network response was not ok');
@@ -125,6 +129,7 @@ function Home() {
             password: hashed
         }
     if (isSignUp) {
+      setShowProgress(true)
       console.log('Signing up:', formData);
       // Call signup API
       if(!emailValid)
@@ -157,7 +162,7 @@ function Home() {
       try {
         
         // Send the form data to the API
-        const response = await fetch('http://localhost:5000/api/signup', {
+        const response = await fetch(`${apiUrl}/api/signup`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -183,7 +188,7 @@ function Home() {
       console.log('Signing in:', formData);
       try {
         // Send the form data to the sign in API
-        const response = await fetch('http://localhost:5000/authenticate', {
+        const response = await fetch(`${apiUrl}/authenticate`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -205,7 +210,12 @@ function Home() {
            else navigate('/profile')
             
         }
-        else 
+        else if(result.code === 2)
+        {
+          setDlgParameters({title:'Notice',text:'User with email address does not exist!',sender: 'signin'})
+          setIsDialogOpen(true)  
+        }
+        else
         {
             setDlgParameters({title:'Notice',text:'Invalid email and password combination',sender: 'signin'})
             setIsDialogOpen(true)  
@@ -352,6 +362,7 @@ function Home() {
           {isSignUp ? 'Sign In' : 'Sign Up'}
         </Button>
       </p>
+      <p style = {{visibility: showProgress ? 'visible' : 'hidden'}}><CircularProgress /></p>
       <AlertDialog isOpen={isDialogOpen} onClose={closeDialog} title = {dlgParameters.title} text = {dlgParameters.text} />
     </div>
   );

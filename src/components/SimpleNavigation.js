@@ -29,6 +29,7 @@ export default function SimpleBottomNavigation() {
               navigate('/profile');
               break;
             case 1:
+              localStorage.clear();
               navigate('/');
               break;
             case 2:

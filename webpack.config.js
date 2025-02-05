@@ -1,5 +1,8 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+//const NodePolyfillPlugin = require('node-polyfill-webpack-plugin');
+const Dotenv = require('dotenv-webpack');
+
 
 module.exports = {
   entry: './src/index.js', // Entry point of your application
@@ -37,6 +40,7 @@ module.exports = {
         PUBLIC_URL: process.env.PUBLIC_URL || '/',
       },
     }),
+    new Dotenv(),
   ],
   devServer: {
     static: {

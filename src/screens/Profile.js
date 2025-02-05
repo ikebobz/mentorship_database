@@ -34,7 +34,7 @@ const CustomTextField = styled(TextField)({
 
 function Profile()
 {
-
+const apiUrl = process.env.REACT_APP_API_URL
 const location = useLocation();
 
 const navigate = useNavigate();
@@ -72,7 +72,7 @@ const countryCodes = [
     mentortype:'',
     profession:'',
     membertype:'',
-    code:''
+    code:'+1'
   });
 
   const [dlgParameters, setDlgParameters] = useState({
@@ -144,7 +144,7 @@ const countryCodes = [
         console.log('Updated form is: ', updatedForm)
         setFormData(updatedForm)
         console.log('Formdata: ',formData)
-        const response = await fetch('http://localhost:5000/submit', {
+        const response = await fetch(`${apiUrl}/submit`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -169,7 +169,7 @@ const countryCodes = [
       else //update user changes
       {
         setUserId(profileid)
-        const response = await fetch(`http://localhost:5000/update/${profileid}`, {
+        const response = await fetch(`${apiUrl}/update/${profileid}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -267,7 +267,8 @@ const countryCodes = [
         region: profile.address.split(', ')[2],
         country: profile.address.split(', ')[3],
         mobile: profile.mobile.substring(profile.mobile.indexOf('-') + 1),
-        code: profile.mobile.split('-',2)[0]
+        code: profile.mobile.split('-',2)[0],
+        certifications: profile.certs
       }))
       console.log('Form data is: ', formData)
     }
@@ -278,7 +279,7 @@ const countryCodes = [
   const getParameters = async () => {
     try {
         // Send the form data to the API
-        const response =  await fetch('http://localhost:5000/parameters');
+        const response =  await fetch(`${apiUrl}/parameters`);
   
         if (!response.ok) {
           throw new Error('Network response was not ok');
@@ -546,7 +547,7 @@ return (
           ))}
 
           </CustomTextField>
-          <MultipleSelect certs = {certs}  onUpdate = {handleMultipleSelect} value = {formData.certs.split('; ')} />
+          <MultipleSelect certs = {certs}  onUpdate = {handleMultipleSelect} value = {formData.certifications ? formData.certifications.split('; ') : []} />
 
           <CustomTextField
          name = 'membertype'

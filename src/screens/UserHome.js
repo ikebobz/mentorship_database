@@ -19,6 +19,7 @@ import EmailIcon from '@mui/icons-material/Email';
 
 const UserHome = () => {
   // Sample user data
+  const apiUrl = process.env.REACT_APP_API_URL
 
   const [profileId, setProfileId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -91,8 +92,8 @@ const UserHome = () => {
              setLoading(false);
           }
           else {
-          console.log(`http://localhost:5000/userinfo/${location.state}`)
-          const response =  await fetch(`http://localhost:5000/userinfo/${location.state}`);
+          console.log(`${apiUrl}/userinfo/${location.state}`)
+          const response =  await fetch(`${apiUrl}/userinfo/${location.state}`);
     
           if (!response.ok) {
             throw new Error('Network response was not ok');

@@ -226,6 +226,7 @@ app.post('/authenticate',  (req, res) => {
         return res.status(201).json({"message": "credentials does not exist",
       "email": auth.email,"password": auth.pwd})
       }
+      else return res.status(200).json({"message": "User with email address does not exist!","code": 2})
 
     });
 } catch (err) {
