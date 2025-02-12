@@ -80,14 +80,14 @@ export default function MultipleSelect(prop) {
   return (
     <div>
       <FormControl sx={{ m: 1, width: 300 }}>
-      <InputLabel id="demo-multiple-name-label">Certifications</InputLabel>
+      <InputLabel id="demo-multiple-name-label">Specialization</InputLabel>
         <Select sx ={{width: 400}}
           labelId="demo-multiple-name-label"
           id="demo-multiple-name"
           multiple
           value={certNames}
           onChange={handleChange}
-          input={<OutlinedInput label="Certifications" />}
+          input={<OutlinedInput label="Specialization" />}
           MenuProps={MenuProps}
           startAdornment = {
             <InputAdornment position="start">

@@ -18,7 +18,7 @@ export default function SimpleBottomNavigation() {
   
 
   return (
-    <Box sx={{ width: 500, bottom: 50, position: 'fixed', left: '50%', transform: 'translateX(-50%)' }}>
+    <Box sx={{ width: '70%', marginRight: 'auto', marginLeft: 'auto', marginTop: '100px'}}>
       <BottomNavigation 
         showLabels
         value={value}
@@ -42,7 +42,7 @@ export default function SimpleBottomNavigation() {
       >
         <BottomNavigationAction label="Edit Profile" icon={<UpdateIcon />} />
         <BottomNavigationAction label="Log Out" icon={<LogoutIcon />} />
-        <BottomNavigationAction label="Home" icon={<HomeIcon />} />
+        <BottomNavigationAction label="Home" icon={<HomeIcon />} disabled = {localStorage.getItem('cachedData') ? false : true} />
       </BottomNavigation>
     </Box>
   );

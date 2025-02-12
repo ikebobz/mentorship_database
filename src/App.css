@@ -34,7 +34,8 @@ img{
 .stacks
 {
   width:70%;
-  margin:50px auto;
+  margin:auto;
+  margin-top: 20px;
 }
 label{
   color:red;
@@ -47,3 +48,4 @@ label{
   text-align:center;
   margin-top:10px;
 }
+

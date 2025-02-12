@@ -177,9 +177,9 @@ function Home() {
         const result = await response.json();
         console.log('Success:', result);
         setAuthId(result.id)
-        setDlgParameters({title:'Success',text:'An activation email has been sent to your email',sender: 'signup'})
+        setDlgParameters({title:'Success',text:'Signup successfully completed!',sender: 'signup'})
         setIsDialogOpen(true)
-        //alert('Form submitted successfully!');
+        
       } catch (error) {
         console.error('Error:', error);
         //alert('Failed to submit form.');

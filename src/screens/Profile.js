@@ -25,7 +25,12 @@ import AlertDialog from '../components/alert';
 import { useLocation } from 'react-router-dom';
 import CardMembershipIcon from '@mui/icons-material/CardMembership';
 import WorkIcon from '@mui/icons-material/Work';
-
+import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import dayjs from "dayjs";
+import PageHeader from '../components/header'
+import '../css/home.css';
 
 const CustomTextField = styled(TextField)({
     width: '400px',
@@ -39,7 +44,7 @@ const location = useLocation();
 
 const navigate = useNavigate();
 const countryCodes = [
-    { code: '+1', label: 'USA (+1)' },
+    { code: '+1', label: 'Canada (+1)' },
     { code: '+44', label: 'UK (+44)' },
     { code: '+91', label: 'India (+91)' },
     { code: '+61', label: 'Australia (+61)' },
@@ -56,6 +61,8 @@ const countryCodes = [
   const [userId, setUserId] = useState('')
   const [isEdit, setIsEdit] = useState(false)
   const [profileid, setProfileId] = useState(0)
+  const [availDate, setAvailDate] = useState(null);
+  const today = dayjs();
   
 
   const [formData, setFormData] = useState({
@@ -72,7 +79,8 @@ const countryCodes = [
     mentortype:'',
     profession:'',
     membertype:'',
-    code:'+1'
+    code:'+1',
+    availability: dayjs().format('YYYY-MM-DD') // Ensure initial value is a valid date string
   });
 
   const [dlgParameters, setDlgParameters] = useState({
@@ -106,19 +114,18 @@ const countryCodes = [
     
   };
 
+  //handle availability date selection
+  const handleDateChange = (date) => {
+    setFormData({
+      ...formData,
+      availability: date ? date.format('YYYY-MM-DD') : null, // Format the date as a string
+    });
+  };
+
   //fire when each texfield is populated
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    /*if(name == 'mobile')
-    {
-        const val = `${countryCode}-${value}`
-        setFormData({
-            ...formData,
-            mobile: val,
-          });
-          return
-
-    }*/
+   const { name, value } = e.target;
+    
      setFormData({
       ...formData,
       [name]: value,
@@ -161,7 +168,7 @@ const countryCodes = [
         if(result.message === 'Form submitted successfully!')
         {
         setUserId(result.id)
-        setDlgParameters({title:'Success',text:'Form successfully submitted',sender: 'form'})
+        setDlgParameters({title:'Success',text:'Congratulations on your successful profile creation.\n An agent will get in touch with you to discuss on next steps',sender: 'form'})
         setIsDialogOpen(true)
         }
         //alert('Form submitted successfully!');
@@ -315,11 +322,14 @@ return (
         <div class = "imagecontainer">
         <img src = {logo} alt = "site-logo"/>
         </div>
-        <div class = "stacks">
+        <div className="page-header-container">
+        <PageHeader />
+      </div>
+        <center style = {{marginTop:80}}><div >
         <form ref = {formRef} onSubmit={handleSubmit}>
-       <Stack direction = "row" spacing={5}>
+       <Stack direction = "row" spacing = {5} >
        <Stack spacing = {5}>
-        <label>Personal Details</label>
+        <label></label>
        <CustomTextField
          name = 'firstname'
           required
@@ -428,7 +438,7 @@ return (
         />
        </Stack>
        <Stack spacing = {5}>
-       <label>Geographical Details</label>
+       <label></label>
        <CustomTextField
           name = 'country'
           required
@@ -522,11 +532,11 @@ return (
         </Stack>
        
        <Stack spacing = {5}>
-       <label>Membership Details</label>
+       <label></label>
         <CustomTextField
          name = 'mentortype'
          id="outlined-required"
-          label="Membership Style"
+          label="MentorShip Style"
           select
           onChange={handleChange}
           value = {formData.mentortype}
@@ -577,6 +587,7 @@ return (
        <CustomTextField
           name = 'profession'
           label="Profession"
+          sx = {{display: 'none'}}
           onChange={handleChange}
           value ={formData.profession}
           slotProps={{
@@ -588,15 +599,29 @@ return (
          ),
        },
      }}
-          
+      />
+       
+       
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+       <DatePicker 
+        name = 'availability'
+        label='Select availability date'
+        dateformat = 'yyyy-MM-dd'
+        onChange = {handleDateChange}
+        minDate={today}
+        value = {dayjs(formData.availability)} // Parse the date string to a dayjs object
         />
+    </LocalizationProvider>
+    
+    
+    
     </Stack>
        </Stack>
        <div style = {{textAlign: 'center',marginTop: 10}}>
        <Button variant = "contained" color = "error" onClick={handleSubmit}>{isEdit ? 'Update' : 'Save'}</Button>
        </div></form>
-        </div>
-      <center><SimpleBottomNavigation /></center>
+       </div></center>
+       <SimpleBottomNavigation />
       <AlertDialog isOpen={isDialogOpen} onClose={closeDialog} title = {dlgParameters.title} text = {dlgParameters.text} />
    </div>
 );

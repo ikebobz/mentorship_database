@@ -86,17 +86,18 @@ app.post('/api/signup', (req, res) => {
       console.error('Error inserting data:', err);
       return res.status(500).json({ error: 'Failed to insert data' });
     }
-    transporter.sendMail(mailOptions,(err,info) => {
+    res.status(201).json({ id: results.insertId, username, email });
+    /*transporter.sendMail(mailOptions,(err,info) => {
       if(err)
       {
         console.log('Error while sending mail', err)
       }
       {
         console.log('Email send status: ',info)
-        res.status(201).json({ id: results.insertId, username, email });
+        
 
       }
-    })
+    })*/
   });
   //res.json({ message: 'Signup successful' });
 });
@@ -145,7 +146,8 @@ app.get('/userinfo/:id', (req, res) => {
           mentortype: user.mentorship_type,
           profession: user.profession,
           membertype: user.membertype,
-          profileid: user.id
+          profileid: user.id,
+          availability: user.availability
 
         }));
         const info = userInfo[0]
@@ -169,7 +171,7 @@ app.get('/parameters',  async (req, res) => {
       SELECT * FROM country;
       SELECT * FROM region;
       SELECT * FROM city;
-      SELECT * FROM cert_types;
+      SELECT * FROM specialization;
       select * from mentor_type`);
 
     // Release the connection back to the pool
@@ -237,7 +239,7 @@ app.post('/authenticate',  (req, res) => {
 
 //upload form data
 app.post('/submit', (req, res) => {
-  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentortype,profession,membertype,code,authid } = req.body;
+  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentortype,profession,membertype,code,availability,authid } = req.body;
   let corrected_address = address.replace(',','')
   const fulladdress = `${corrected_address}, ${city}, ${region}, ${country}`
   const contact = `${code}-${mobile}`
@@ -246,8 +248,8 @@ app.post('/submit', (req, res) => {
 
   // Insert data into the MySQL database
   connection.query(
-    'INSERT INTO userinfo (firstname,lastname,othername,email,mobile,address,professional_certs,mentorship_type,profession,membertype) VALUES (?, ?,?,?,?,?,?,?,?,?)',
-    [firstname,lastname,othername,email,contact,fulladdress,certifications,mentortype,profession,membertype],
+    'INSERT INTO userinfo (firstname,lastname,othername,email,mobile,address,professional_certs,mentorship_type,profession,membertype,availability) VALUES (?, ?,?,?,?,?,?,?,?,?,?)',
+    [firstname,lastname,othername,email,contact,fulladdress,certifications,mentortype,profession,membertype,availability],
     (error, results) => {
       if (error) {
         console.error('Error inserting data:', error);
@@ -270,12 +272,12 @@ app.post('/submit', (req, res) => {
 
 app.post('/update/:id',(rq,rs) =>{
   const profileid = rq.params.id;
-  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentortype,profession,membertype,code} = rq.body;
+  const { firstname,lastname,othername,email,mobile,country,region,city,address,certifications,mentortype,profession,membertype,code,availability} = rq.body;
   let corrected_address = address.replace(',','');
   const fulladdress = `${corrected_address}, ${city}, ${region}, ${country}`;
   const contact = `${code}-${mobile}`;
-  let updateQuery = 'update userinfo set firstname = ?, lastname = ?,othername = ?,email = ?,mobile = ?,address = ?,professional_certs = ?,mentorship_type = ?,profession = ?, membertype = ? where id = ?'
-  connection.query(updateQuery,[firstname,lastname,othername,email,contact,fulladdress,certifications,mentortype,profession,membertype,profileid],(err,res)=>
+  let updateQuery = 'update userinfo set firstname = ?, lastname = ?,othername = ?,email = ?,mobile = ?,address = ?,professional_certs = ?,mentorship_type = ?,profession = ?, membertype = ?, availability = ? where id = ?'
+  connection.query(updateQuery,[firstname,lastname,othername,email,contact,fulladdress,certifications,mentortype,profession,membertype,availability,profileid],(err,res)=>
   {
     if(err)
     {
