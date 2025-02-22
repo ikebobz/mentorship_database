@@ -366,7 +366,6 @@ return (
     />
     <CustomTextField
           name = 'othername'
-          required
           id="outlined-required"
           label="Other name"
           onChange={handleChange}
@@ -562,7 +561,7 @@ return (
           <CustomTextField
          name = 'membertype'
          id="outlined-required"
-          label="Member type"
+          label="Mentorship Role"
           select
           onChange={handleChange}
           value = {formData.membertype}
