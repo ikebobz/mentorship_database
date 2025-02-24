@@ -30,6 +30,7 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import dayjs from "dayjs";
 import PageHeader from '../components/header'
+import CustomInput from '../components/custominput';
 import '../css/home.css';
 
 const CustomTextField = styled(TextField)({
@@ -63,6 +64,8 @@ const countryCodes = [
   const [profileid, setProfileId] = useState(0)
   const [availDate, setAvailDate] = useState(null);
   const today = dayjs();
+  const[open, setOpen] = useState(false);
+  const [specialization, setSpecialization] = useState('');
   
 
   const [formData, setFormData] = useState({
@@ -99,7 +102,10 @@ const countryCodes = [
     }
     
     };
-  
+   //handle close of custom specialization dialog
+    const handleClose = () => {
+      setOpen(false);
+    }
 
   
   
@@ -135,6 +141,7 @@ const countryCodes = [
  
   //handle form submission
   const handleSubmit = async (e) => {
+    console.log('the value of specialization is :',specialization)
     e.preventDefault();
     if(!validateForm())
     {
@@ -147,9 +154,16 @@ const countryCodes = [
         // Send the form data to the API
         if(!isEdit){
         console.log('authentication id: ',location)
-        const updatedForm = {...formData, authid: location.state};
+        var updatedForm = {};
+        if(specialization != ''){
+        updatedForm = {...formData, authid: location.state,certifications:specialization ? formData.certifications.replace('Other',specialization) : formData.certifications};
+        }
+        else 
+        {
+          updatedForm = {...formData, authid: location.state};
+        }
+
         console.log('Updated form is: ', updatedForm)
-        setFormData(updatedForm)
         console.log('Formdata: ',formData)
         const response = await fetch(`${apiUrl}/submit`, {
           method: 'POST',
@@ -175,13 +189,21 @@ const countryCodes = [
       }
       else //update user changes
       {
-        setUserId(profileid)
+        setUserId(profileid);
+        var updatedForm = {};
+        if(specialization != '')
+        {
+         
+          updatedForm = {...formData,certifications:specialization ? formData.certifications.replace('Other',specialization) : formData.certifications};
+        
+        }
+       
         const response = await fetch(`${apiUrl}/update/${profileid}`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify(formData),
+          body: JSON.stringify(specialization ? updatedForm : formData),
         });
   
         if (!response.ok) {
@@ -208,12 +230,21 @@ const countryCodes = [
   const handleMultipleSelect = (data) =>
   {
     console.log('received data: ',data)
+    if(data.includes('Other'))
+      {
+        setOpen(true);
+      }
     setFormData({
      ...formData,
      certifications: data,
     }
-)
+);
+
   };
+
+  const handleSpecialization = (value) => {
+    setSpecialization(value);
+  }
 
   //validate form
   const validateForm = () => {
@@ -466,7 +497,7 @@ return (
           name = 'region'
           required
           id="outlined-required"
-          label="Region"
+          label="Province"
           select
           onChange={handleChange}
           value = {formData.region}
@@ -622,6 +653,7 @@ return (
        </div></center>
        <SimpleBottomNavigation />
       <AlertDialog isOpen={isDialogOpen} onClose={closeDialog} title = {dlgParameters.title} text = {dlgParameters.text} />
+      <CustomInput open = {open} handleClose = {handleClose} onSubmit={handleSpecialization} />
    </div>
 );
 
