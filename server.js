@@ -1,3 +1,5 @@
+require('dotenv').config({ path: '.env.development' });
+//require('dotenv').config(); // Load environment variables from .env file
 const express = require('express');
 const path = require('path');
 const app = express();
@@ -18,17 +20,17 @@ app.use(cors());
 
 //MySQl connection
 const connection = mysql.createConnection({
-  host: 'localhost',
-  user: 'root', // Replace with your MySQL username
-  password: 'mentor', // Replace with your MySQL password
-  database: 'mentordb',
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
 });
 
 const pool = mysql2.createPool({
-  host: 'localhost',
-  user: 'root',
-  password: 'mentor',
-  database: 'mentordb',
+  host: process.env.DB_HOST || 'localhost',
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME || 'mentordb',
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
@@ -53,12 +55,25 @@ pool.getConnection()
     console.error('Failed to acquire connection:', err);
   });
 
+  //set keep_alive timer
+  setInterval(() => {
+    connection.query('SELECT 1', (err) => {
+      if (err) {
+        console.error('Error keeping connection alive:', err);
+      } else {
+        console.log('Connection kept alive');
+      }
+    });
+  }, 30000); // Ping the database every 30 seconds
+
+  
   //define transport protocol
   const transporter = nodemailer.createTransport({
-      service: 'gmail', // Use your email service (e.g., 'gmail', 'yahoo', 'outlook')
+      host: process.env.EMAIL_HOST, // Use your email service (e.g., 'smtp.gmail.com')
+      port: process.env.EMAIL_PORT, // Use your email service (e.g., 587 for Gmail)
       auth: {
-          user: 'mcpikebobs@gmail.com', // Your email address
-          pass: 'fycs cewl dlhc btsp'  // Your email password or app-specific password
+          user: process.env.EMAIL_USER, // Use environment variables
+          pass: process.env.EMAIL_PASSWORD  // Use environment variables
       }
   });
   
@@ -73,7 +88,7 @@ app.post('/api/signup', (req, res) => {
 
   //mail parameters
   const mailOptions = {
-    from: 'mcpikebobs@gmail.com', // Sender address
+    from: process.env.EMAIL_USER, // Sender address
     to: `${email}`, // List of recipients
     subject: 'Hello from Node.js', // Subject line
     text: 'This is a test email sent from Node.js using nodemailer.', // Plain text body
@@ -86,18 +101,22 @@ app.post('/api/signup', (req, res) => {
       console.error('Error inserting data:', err);
       return res.status(500).json({ error: 'Failed to insert data' });
     }
-    res.status(201).json({ id: results.insertId, username, email });
-    /*transporter.sendMail(mailOptions,(err,info) => {
-      if(err)
-      {
-        console.log('Error while sending mail', err)
-      }
-      {
-        console.log('Email send status: ',info)
-        
+    else{
+      transporter.sendMail(mailOptions,(err,info) => {
+        if(err)
+        {
+          console.log('Error while sending mail', err)
+        }
+        {
+          console.log('Email send status: ',info)
+          
+  
+        }
+      })
 
-      }
-    })*/
+    }
+    res.status(201).json({ id: results.insertId, username, email });
+    
   });
   //res.json({ message: 'Signup successful' });
 });
@@ -256,13 +275,14 @@ app.post('/submit', (req, res) => {
         return res.status(500).send('An error occurred while saving the data.');
       }
         const profileid = results.insertId
+        console.log('Data inserted successfully:', results);
         connection.query('update auth set profile_id = ? where id = ?',[profileid,authid],(err,result) =>{
           if(err)
           {
             console.error('Error updating data:', error);
             return res.status(500).send('An error occurred while saving the data.');
           }
-          console.log('Data inserted successfully:', result);
+          console.log('Data updated successfully:', result);
           return res.status(200).json({"message" : 'Form submitted successfully!',"id": results.insertId});
         })
     }

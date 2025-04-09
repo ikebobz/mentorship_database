@@ -32,14 +32,17 @@ import dayjs from "dayjs";
 import PageHeader from '../components/header'
 import CustomInput from '../components/custominput';
 import '../css/home.css';
+import { useMediaQuery } from '@mui/material';
 
-const CustomTextField = styled(TextField)({
-    width: '400px',
-  });
+//const CustomTextField = styled(TextField)({
+  //  width: '400px',
+ // });
 
 
 function Profile()
 {
+
+const isMobile = useMediaQuery('(max-width:767px)');
 const apiUrl = process.env.REACT_APP_API_URL
 const location = useLocation();
 
@@ -306,7 +309,8 @@ const countryCodes = [
         country: profile.address.split(', ')[3],
         mobile: profile.mobile.substring(profile.mobile.indexOf('-') + 1),
         code: profile.mobile.split('-',2)[0],
-        certifications: profile.certs
+        certifications: profile.certs,
+        availability: dayjs(profile.availability).format('YYYY-MM-DD')
       }))
       console.log('Form data is: ', formData)
     }
@@ -346,19 +350,31 @@ const countryCodes = [
   },[]);
   if(loading) return(<div>Loading.........</div>)
 
+ 
+  const stackDirection = isMobile ? 'column' : 'row';
 
+  const containerStyle = {
+    marginTop: isMobile ? 20 : 80,
+    padding: isMobile ? '10px' : '0',
+  };
+
+  const textFieldWidth = isMobile ? '100%' : '400px';
+
+  const CustomTextField = styled(TextField)({
+    width: textFieldWidth,
+  });
 
 return (
     <div class = "profile">
-        <div class = "imagecontainer">
-        <img src = {logo} alt = "site-logo"/>
+        <div className="imagecontainer" style={{ textAlign: 'center' }}>
+                <img src={logo} alt="site-logo" style={{ maxWidth: '100%', height: 'auto' }} />
         </div>
         <div className="page-header-container">
         <PageHeader />
       </div>
-        <center style = {{marginTop:80}}><div >
+        <center style = {containerStyle}><div >
         <form ref = {formRef} onSubmit={handleSubmit}>
-       <Stack direction = "row" spacing = {5} >
+       <Stack direction = {stackDirection} spacing = {5} >
        <Stack spacing = {5}>
         <label></label>
        <CustomTextField
@@ -651,7 +667,9 @@ return (
        <Button variant = "contained" color = "error" onClick={handleSubmit}>{isEdit ? 'Update' : 'Save'}</Button>
        </div></form>
        </div></center>
-       <SimpleBottomNavigation />
+       <div style={{ marginTop: '100px', textAlign: 'center' }}>
+             <SimpleBottomNavigation />
+        </div>
       <AlertDialog isOpen={isDialogOpen} onClose={closeDialog} title = {dlgParameters.title} text = {dlgParameters.text} />
       <CustomInput open = {open} handleClose = {handleClose} onSubmit={handleSpecialization} />
    </div>

@@ -12,10 +12,12 @@ import EmailIcon from '@mui/icons-material/Email';
 import PageHeader from '../components/header';
 import '../css/home.css';
 import { useEffect, useState } from 'react';
+import { useMediaQuery } from '@mui/material';
 
 const UserHome = () => {
   // Sample user data
   const apiUrl = process.env.REACT_APP_API_URL;
+  const isMobile = useMediaQuery('(max-width:767px)');
 
   const [profileId, setProfileId] = useState('');
   const [loading, setLoading] = useState(true);
@@ -105,41 +107,43 @@ const UserHome = () => {
     return <div>loading........</div>;
   }
   console.log('userdata is:', userData);
+  console.log('isMobile:', isMobile);
 
   return (
-    <div>
-      <div className="imagecontainer">
-        <img src={logo} alt="site-logo" />
+    <div style={{ padding: '16px' }}>
+      <div className="imagecontainer" style={{ textAlign: 'center' }}>
+        <img src={logo} alt="site-logo" style={{ maxWidth: '100%', height: 'auto' }} />
       </div>
-      <div className="page-header-container">
+      <div className="page-header-container" style={{ marginTop: '16px' }}>
         <PageHeader />
       </div>
-      <div style={{ textAlign: 'center', marginTop: 80 }}>
-        <center>
-          <Avatar
-            alt="User Profile"
-            src="https://via.placeholder.com/150"
-            sx={{ width: 100, height: 100 }}
-          />
-        </center>
-        <h2>{`${data.certs.split('; ')[0]}.,`}</h2>
-        <p>{`${data.membertype}`}</p>
+      <div style={{ textAlign: 'center', marginTop: '40px' }}>
+        <Avatar
+          alt="User Profile"
+          src="https://via.placeholder.com/150"
+          sx={{ width: 80, height: 80, margin: 'auto' }}
+        />
+        <h2 style={{ fontSize: '1.5rem', margin: '8px 0' }}>{`${data.certs.split('; ')[0]}.,`}</h2>
+        <p style={{ fontSize: '1rem', color: '#666' }}>{`${data.membertype}`}</p>
       </div>
-      <Card sx={{ maxWidth: 800, margin: 'auto', marginTop: 4 }}>
+      <Card sx={{ maxWidth: isMobile ? '100%' : '800px', margin: '16px auto', padding: '16px', boxShadow: '0px 4px 6px rgba(0, 0, 0, 0.1)' }}>
         <CardContent>
           {userData.map((row, index) => (
             <Grid container alignItems="center" spacing={2} key={index} sx={{ marginBottom: 2 }}>
-              <Grid item>{row.icon}</Grid>
-              <Grid item wordBreak={'break-word'} maxWidth={'90%'}>
-                <Typography variant="body1">{row.text}</Typography>
+              <Grid item xs={2} style={{ textAlign: 'center' }}>
+                {row.icon}
+              </Grid>
+              <Grid item xs={10} style={{ wordBreak: 'break-word' }}>
+                <Typography variant="body1" style={{ fontSize: '0.9rem' }}>{row.text}</Typography>
               </Grid>
             </Grid>
           ))}
         </CardContent>
       </Card>
-      <center>
-        <SimpleBottomNavigation />
-      </center>
+    <div style={{ marginTop: '100px', textAlign: 'center' }}>
+      <SimpleBottomNavigation />
+    </div>
+      
     </div>
   );
 };

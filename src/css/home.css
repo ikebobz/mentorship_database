@@ -18,10 +18,9 @@
 }
 
 .page-header-container {
-  position: absolute;
-  top: 0;
-  left: 50%;
-  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
   text-align: center;
 }

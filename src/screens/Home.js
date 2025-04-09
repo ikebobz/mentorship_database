@@ -17,10 +17,14 @@ import { IconButton } from '@mui/material';
 import bcrypt from 'bcryptjs';
 import CircularProgress from '@mui/material/CircularProgress';
 import { Visibility } from '@mui/icons-material';
+import PageHeader from '../components/header';
+import { useMediaQuery } from '@mui/material';
+
 
 
 function Home() {
   const apiUrl = process.env.REACT_APP_API_URL
+  const isMobile = useMediaQuery('(max-width:767px)');
   const navigate = useNavigate();
   //control references
   const formRef = useRef(null);
@@ -129,12 +133,33 @@ function Home() {
             password: hashed
         }
     if (isSignUp) {
+      if (!formData.username.trim() && isSignUp) {
+        setShowProgress(false);
+        setDlgParameters({ title: 'Validation Error', text: 'Username cannot be blank', sender: 'validate' });
+        setIsDialogOpen(true);
+        return;
+      }
+
+      if (!formData.email.trim()) {
+        setShowProgress(false);
+        setDlgParameters({ title: 'Validation Error', text: 'Email cannot be blank', sender: 'validate' });
+        setIsDialogOpen(true);
+        return;
+      }
+
+      if (!formData.password.trim()) {
+        setShowProgress(false);
+        setDlgParameters({ title: 'Validation Error', text: 'Password cannot be blank', sender: 'validate' });
+        setIsDialogOpen(true);
+        return;
+      }
       setShowProgress(true)
       console.log('Signing up:', formData);
       // Call signup API
       if(!emailValid)
       {
         console.log("invalid email")
+        setShowProgress(false)
         setDlgParameters({title:'Validation Error',text:'The email provided is invalid, please input a proper email',sender: 'validate'})
         setIsDialogOpen(true)
         return;
@@ -142,6 +167,7 @@ function Home() {
       if(!passValid)
       {
         console.log("invalid password")
+        setShowProgress(false)
         setDlgParameters({title:'Validation Error',text:'Password minimum length must be 8 and must be alphanumeric',sender: 'validate'})
         setIsDialogOpen(true)
         return;
@@ -149,12 +175,14 @@ function Home() {
       if(userExists)
       {
         console.log("user exists")
+        setShowProgress(false)
         setDlgParameters({title:'Validation Error',text:'A member with the specified username exists',sender: 'validate'})
         setIsDialogOpen(true)
         return;
     }
     if(emailExists)
         {
+          setShowProgress(false)
           setDlgParameters({title:'Validation Error',text:'A member with the specified email exists',sender: 'validate'})
           setIsDialogOpen(true)
           return;
@@ -185,6 +213,19 @@ function Home() {
         //alert('Failed to submit form.');
       }
     } else {
+      if (!formData.email.trim()) {
+        setShowProgress(false);
+        setDlgParameters({ title: 'Validation Error', text: 'Email cannot be blank', sender: 'validate' });
+        setIsDialogOpen(true);
+        return;
+      }
+
+      if (!formData.password.trim()) {
+        setShowProgress(false);
+        setDlgParameters({ title: 'Validation Error', text: 'Password cannot be blank', sender: 'validate' });
+        setIsDialogOpen(true);
+        return;
+      }
       console.log('Signing in:', formData);
       try {
         // Send the form data to the sign in API
@@ -254,11 +295,35 @@ function Home() {
     }
     };
 
+
+   // const isMobile = window.innerWidth <= 768;
+
+    const formStyles = {
+      '& .MuiTextFieldRoot': { 
+        m: 1, 
+        width: isMobile ? '90%' : '35ch' 
+      },
+    };
+
+    const headerStyles = {
+      fontSize: isMobile ? '1.5rem' : '2rem',
+    };
+
+    const buttonStyles = {
+      width: isMobile ? '90%' : 'auto',
+      margin: isMobile ? '10px auto' : '10px',
+    };
   return (
-    <div className="App">
-	  <img src = {logo} alt = "site-logo"/>
+    <div className="App" style = {{ padding: '16px' }}>
+      <div className="imagecontainer" style={{ textAlign: 'center' }}>
+	   
+            <img src={logo} alt="site-logo" />
+          </div>
+          <div className="page-header-container">
+          <PageHeader />
+          </div>
       <h1>{isSignUp ? 'Sign Up' : 'Sign In'}</h1>
-      <form ref = {formRef} onSubmit={handleSubmit}>
+      <form ref = {formRef} onSubmit={handleSubmit} style = {formStyles}>
 	   <Box
       component="form"
       sx={{ '& .MuiTextField-root': { m: 1, width: '35ch' } }}
@@ -353,12 +418,12 @@ function Home() {
         required
           />
         </div>
-        <Button variant = "contained" color = "error"  onClick={handleClick}>{isSignUp ? 'Sign Up' : 'Sign In'}</Button>
+        <Button variant = "contained" color = "error"  onClick={handleClick} style = {buttonStyles}>{isSignUp ? 'Sign Up' : 'Sign In'}</Button>
 		</Box>
       </form>
       <p>
         {isSignUp ? 'Already have an account? ' : 'Need an account? '}
-        <Button variant = "contained" color = "error" onClick={() => setIsSignUp(!isSignUp)}>
+        <Button variant = "contained" color = "error" onClick={() => setIsSignUp(!isSignUp)} style = {buttonStyles}>
           {isSignUp ? 'Sign In' : 'Sign Up'}
         </Button>
       </p>
